@@ -54,6 +54,11 @@ class ProgressAchievementController extends Controller
                 continue;
             }
 
+            // Skip 'turun' metrics where actual is 0 (division by zero would give INF)
+            if ($metric->arah_target !== 'naik' && $nilaiActual == 0) {
+                continue;
+            }
+
             if ($metric->arah_target === 'naik') {
                 $persenAchievement = ($nilaiActual / $nilaiTarget) * 100;
             } else {

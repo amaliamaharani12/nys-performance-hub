@@ -24,31 +24,52 @@
         .navbar {
             background: #ffffff;
             border-bottom: 1px solid #e5e7eb;
-            padding: 12px 30px;
+            padding: 14px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            row-gap: 10px;
         }
 
         .navbar-left {
             flex: 1;
             display: flex;
             align-items: center;
+            min-width: 180px;
         }
 
         .navbar-logo {
-            height: 46px;
+            height: 72px;
             object-fit: contain;
         }
 
         .navbar-center {
-            flex: 1;
+            flex: 2;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .navbar-center .title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-center .title-icon {
+            width: 26px;
+            height: 26px;
+            padding: 5px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: #ffffff;
+            flex-shrink: 0;
         }
 
         .navbar-center h1 {
-            font-size: 22px;
+            font-size: 24px;
             margin: 0;
             font-weight: 800;
             letter-spacing: 0.5px;
@@ -56,6 +77,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0px 2px 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .navbar-center .title-underline {
+            width: 56px;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #1d4ed8, #3b82f6);
         }
 
         .navbar-right {
@@ -135,7 +163,7 @@
             margin-bottom: 0;
             width: 100%;
         }
-        
+
         .choices__inner {
             background-color: #f9fafb;
             border: 1px solid #e5e7eb;
@@ -149,12 +177,13 @@
             display: flex;
             align-items: center;
         }
-        
-        .is-focused .choices__inner, .is-open .choices__inner {
+
+        .is-focused .choices__inner,
+        .is-open .choices__inner {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
-        
+
         .choices__list--dropdown .choices__item--selectable.is-highlighted {
             background-color: #eff6ff;
             color: #1d4ed8;
@@ -219,7 +248,7 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             position: relative;
         }
-        
+
         .chart-container {
             position: absolute;
             top: 8px;
@@ -302,7 +331,8 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            color: #6b7280;   /* always gray — no color tinting */
+            color: #6b7280;
+            /* always gray — no color tinting */
         }
 
         /* Only the number gets a color */
@@ -311,9 +341,18 @@
             font-weight: 800;
             line-height: 1.1;
         }
-        .kurang   .badge-box .badge-pct { color: #dc2626; }
-        .tercapai .badge-box .badge-pct { color: #16a34a; }
-        .melampaui .badge-box .badge-pct { color: #16a34a; }
+
+        .kurang .badge-box .badge-pct {
+            color: #dc2626;
+        }
+
+        .tercapai .badge-box .badge-pct {
+            color: #16a34a;
+        }
+
+        .melampaui .badge-box .badge-pct {
+            color: #16a34a;
+        }
 
         /* Emoji at top-right, bigger */
         .face-top {
@@ -348,14 +387,24 @@
             font-size: 13px;
             font-weight: 800;
         }
+
         .trend-arrow svg {
             width: 18px;
             height: 18px;
             flex-shrink: 0;
         }
-        .trend-arrow.up   { color: #16a34a; }
-        .trend-arrow.down { color: #dc2626; }
-        .trend-arrow.gold { color: #16a34a; }
+
+        .trend-arrow.up {
+            color: #16a34a;
+        }
+
+        .trend-arrow.down {
+            color: #dc2626;
+        }
+
+        .trend-arrow.gold {
+            color: #16a34a;
+        }
 
         .empty-state {
             text-align: center;
@@ -437,30 +486,48 @@
 
     <div class="navbar">
         <div class="navbar-left">
-            <!-- As a fallback if logo-pemi.png doesn't exist, it displays text exactly like the logo -->
-            <img src="{{ asset('img/logo-pemi.png') }}" alt="Logo" class="navbar-logo" onerror="this.outerHTML='<div style=\'display:flex; flex-direction:column; line-height:1;\'><h2 style=\'color: #e11d48; margin:0; font-weight: 900; font-size: 26px; letter-spacing: 1px;\'>YAZAKI</h2><span style=\'font-size:10px; font-weight:600; color:#374151; margin-top:4px;\'>PT. EDS MANUFACTURING INDONESIA</span></div>'" />
+            <img src="{{ asset('img/logo-pemi.png') }}" alt="Logo" class="navbar-logo" />
         </div>
-        
+
         <div class="navbar-center">
-            <h1>Progress Achievement</h1>
+            <div class="title-row">
+                <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18" />
+                    <path d="M18.5 8l-5 5-3-3-4 4" />
+                </svg>
+                <h1>Progress Achievement</h1>
+            </div>
+            <div class="title-underline"></div>
         </div>
-        
+
         <div class="navbar-right">
             <div class="badge-public">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
                 {{ auth()->check() ? auth()->user()->name : 'Public View' }}
             </div>
-            
+
             @if(auth()->check())
-                <form action="{{ Route::has('logout') ? route('logout') : url('/logout') }}" method="POST" style="margin: 0;">
+                <form action="{{ Route::has('logout') ? route('logout') : url('/logout') }}" method="POST"
+                    style="margin: 0;">
                     @csrf
                     <button type="submit" class="btn-login" title="Logout">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
                     </button>
                 </form>
             @else
                 <a href="{{ Route::has('login') ? route('login') : url('/login') }}" class="btn-login" title="Login">
-                    <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
                 </a>
             @endif
         </div>
@@ -499,7 +566,8 @@
                         <select name="status" onchange="document.getElementById('filterForm').submit()">
                             <option value="all" {{ $status === 'all' ? 'selected' : '' }}>All</option>
                             <option value="achieve" {{ $status === 'achieve' ? 'selected' : '' }}>Achieve</option>
-                            <option value="non_achieve" {{ $status === 'non_achieve' ? 'selected' : '' }}>Non-Achieve</option>
+                            <option value="non_achieve" {{ $status === 'non_achieve' ? 'selected' : '' }}>Non-Achieve
+                            </option>
                         </select>
                     </div>
                 </form>
@@ -511,9 +579,10 @@
                             <div class="label">Achieve Items (including over-achieve)</div>
                         </div>
                         <div style="opacity: 0.15; color: #16a34a; flex-shrink: 0; margin-left: 10px;">
-                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
                             </svg>
                         </div>
                     </div>
@@ -523,10 +592,11 @@
                             <div class="label">Non-Achieve Items</div>
                         </div>
                         <div style="opacity: 0.15; color: #dc2626; flex-shrink: 0; margin-left: 10px;">
-                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <circle cx="12" cy="12" r="10"></circle>
-                              <line x1="15" y1="9" x2="9" y2="15"></line>
-                              <line x1="9" y1="9" x2="15" y2="15"></line>
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
                             </svg>
                         </div>
                     </div>
@@ -547,7 +617,7 @@
                 @foreach ($items as $item)
                     @php
                         $delta = round(abs($item['persen_achievement'] - 100), 1);
-                        $isUp  = $item['persen_achievement'] >= 100;
+                        $isUp = $item['persen_achievement'] >= 100;
                         $trendClass = $item['kategori'] === 'melampaui' ? 'gold' : ($isUp ? 'up' : 'down');
                     @endphp
                     <div class="item-card {{ $item['kategori'] }}"
@@ -577,20 +647,24 @@
                                     <circle cx="12" cy="12" r="10" fill="#dc2626" />
                                     <circle cx="9" cy="10" r="1.2" fill="#fff" />
                                     <circle cx="15" cy="10" r="1.2" fill="#fff" />
-                                    <path d="M8 16c1-1.5 2.5-2 4-2s3 0.5 4 2" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                                    <path d="M8 16c1-1.5 2.5-2 4-2s3 0.5 4 2" stroke="#fff" stroke-width="1.5" fill="none"
+                                        stroke-linecap="round" />
                                 </svg>
                             @elseif ($item['kategori'] === 'tercapai')
                                 <svg class="face-top" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="10" fill="#16a34a" />
                                     <circle cx="9" cy="10" r="1.2" fill="#fff" />
                                     <circle cx="15" cy="10" r="1.2" fill="#fff" />
-                                    <path d="M8 14c1 1.5 2.5 2 4 2s3-0.5 4-2" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                                    <path d="M8 14c1 1.5 2.5 2 4 2s3-0.5 4-2" stroke="#fff" stroke-width="1.5" fill="none"
+                                        stroke-linecap="round" />
                                 </svg>
                             @else
                                 <svg class="face-top" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="10" fill="#16a34a" />
-                                    <path d="M8 9.5c0-0.5 0.4-1 1-1s1 0.5 1 1M14 9.5c0-0.5 0.4-1 1-1s1 0.5 1 1" stroke="#fff" stroke-width="1.4" stroke-linecap="round" />
-                                    <path d="M7.5 13.5c1.2 2 2.8 2.8 4.5 2.8s3.3-0.8 4.5-2.8" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" />
+                                    <path d="M8 9.5c0-0.5 0.4-1 1-1s1 0.5 1 1M14 9.5c0-0.5 0.4-1 1-1s1 0.5 1 1" stroke="#fff"
+                                        stroke-width="1.4" stroke-linecap="round" />
+                                    <path d="M7.5 13.5c1.2 2 2.8 2.8 4.5 2.8s3.3-0.8 4.5-2.8" stroke="#fff" stroke-width="1.6"
+                                        fill="none" stroke-linecap="round" />
                                 </svg>
                             @endif
                         </div>
@@ -604,12 +678,14 @@
                             <div class="indicator-right">
                                 <div class="trend-arrow {{ $trendClass }}">
                                     @if ($isUp)
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                            stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                                             <polyline points="17 6 23 6 23 12"></polyline>
                                         </svg>
                                     @else
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                            stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
                                             <polyline points="17 18 23 18 23 12"></polyline>
                                         </svg>
@@ -646,7 +722,7 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const selects = document.querySelectorAll('.filter-group select');
             selects.forEach(select => {
                 new Choices(select, {
@@ -658,7 +734,7 @@
 
             const achieveCount = {{ $totalAchieve }};
             const nonAchieveCount = {{ $totalNonAchieve }};
-            
+
             if (achieveCount > 0 || nonAchieveCount > 0) {
                 new Chart(document.getElementById('summaryPieChart'), {
                     type: 'pie',
