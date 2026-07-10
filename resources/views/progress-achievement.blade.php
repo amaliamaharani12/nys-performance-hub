@@ -24,74 +24,83 @@
         .navbar {
             background: #ffffff;
             border-bottom: 1px solid #e5e7eb;
-            padding: 14px 30px;
+            padding: 10px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            row-gap: 10px;
+            gap: 12px;
+            /* NEVER wrap — always one row */
+            flex-wrap: nowrap;
+            overflow: hidden;
         }
 
         .navbar-left {
-            flex: 1;
+            flex: 0 0 auto;
             display: flex;
             align-items: center;
-            min-width: 180px;
         }
 
         .navbar-logo {
-            height: 72px;
+            height: 52px;
             object-fit: contain;
+            display: block;
         }
 
         .navbar-center {
-            flex: 2;
+            flex: 1 1 auto;
+            min-width: 0;        /* allow shrinking */
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
+            overflow: hidden;
         }
 
         .navbar-center .title-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
         }
 
         .navbar-center .title-icon {
-            width: 26px;
-            height: 26px;
-            padding: 5px;
-            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            padding: 4px;
+            border-radius: 7px;
             background: linear-gradient(135deg, #1d4ed8, #3b82f6);
             color: #ffffff;
             flex-shrink: 0;
         }
 
         .navbar-center h1 {
-            font-size: 24px;
+            font-size: clamp(14px, 2.5vw, 24px);
             margin: 0;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             background: linear-gradient(90deg, #1d4ed8, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0px 2px 4px rgba(59, 130, 246, 0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .navbar-center .title-underline {
-            width: 56px;
+            width: 40px;
             height: 3px;
             border-radius: 999px;
             background: linear-gradient(90deg, #1d4ed8, #3b82f6);
         }
 
         .navbar-right {
-            flex: 1;
+            flex: 0 0 auto;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .badge-public {
@@ -126,9 +135,9 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 24px 20px 60px;
+            padding: 24px 30px 60px;
         }
 
         .filter-bar {
@@ -193,6 +202,7 @@
             display: flex;
             gap: 16px;
             margin-bottom: 0;
+            flex-wrap: wrap;
         }
 
         .summary-card {
@@ -214,6 +224,10 @@
 
         .summary-card.non-achieve {
             border-left-color: #dc2626;
+        }
+
+        .summary-card.no-data {
+            border-left-color: #9ca3af;
         }
 
         .summary-card .num {
@@ -289,6 +303,11 @@
             border-top-color: #16a34a;
         }
 
+        .item-card.tidak_ada_data {
+            border-top-color: #9ca3af;
+            opacity: 0.85;
+        }
+
         .item-card .group-tag {
             font-size: 11px;
             color: #9ca3af;
@@ -352,6 +371,10 @@
 
         .melampaui .badge-box .badge-pct {
             color: #16a34a;
+        }
+
+        .tidak_ada_data .badge-box .badge-pct {
+            color: #9ca3af;
         }
 
         /* Emoji at top-right, bigger */
@@ -479,6 +502,59 @@
         table.detail-table td:first-child {
             text-align: left;
         }
+
+        /* ---- Responsive: layout only (navbar always stays 1 row) ---- */
+        @media (max-width: 1200px) {
+            .navbar  { padding: 10px 20px; }
+            .container { padding: 20px 20px 60px; }
+        }
+
+        @media (max-width: 900px) {
+            .badge-public {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            /* Hide the eye icon text, keep icon only */
+            .badge-label-text { display: none; }
+            .badge-public { padding: 6px 8px; }
+            .navbar-logo { height: 38px; }
+            .navbar-center .title-icon { width: 20px; height: 20px; min-width: 20px; }
+        }
+
+        @media (max-width: 1024px) {
+            .top-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .right-panel {
+                flex: none;
+                width: 100%;
+                height: 320px;
+            }
+
+            .chart-container {
+                position: absolute;
+                top: 12px;
+                bottom: 12px;
+                left: 12px;
+                right: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filter-bar { gap: 12px; }
+
+            .summary-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .summary-card { min-width: 0; }
+        }
     </style>
 </head>
 
@@ -507,7 +583,7 @@
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
                 </svg>
-                {{ auth()->check() ? auth()->user()->name : 'Public View' }}
+                <span class="badge-label-text">{{ auth()->check() ? auth()->user()->name : 'Public View' }}</span>
             </div>
 
             @if(auth()->check())
@@ -568,6 +644,8 @@
                             <option value="achieve" {{ $status === 'achieve' ? 'selected' : '' }}>Achieve</option>
                             <option value="non_achieve" {{ $status === 'non_achieve' ? 'selected' : '' }}>Non-Achieve
                             </option>
+                            <option value="tidak_ada_data" {{ $status === 'tidak_ada_data' ? 'selected' : '' }}>No Data
+                            </option>
                         </select>
                     </div>
                 </form>
@@ -600,6 +678,20 @@
                             </svg>
                         </div>
                     </div>
+                    <div class="summary-card no-data">
+                        <div>
+                            <div class="num">{{ $totalNoData }}</div>
+                            <div class="label">No Data Yet</div>
+                        </div>
+                        <div style="opacity: 0.15; color: #9ca3af; flex-shrink: 0; margin-left: 10px;">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -616,9 +708,11 @@
             <div class="grid">
                 @foreach ($items as $item)
                     @php
-                        $delta = round(abs($item['persen_achievement'] - 100), 1);
-                        $isUp = $item['persen_achievement'] >= 100;
-                        $trendClass = $item['kategori'] === 'melampaui' ? 'gold' : ($isUp ? 'up' : 'down');
+                        $isNoData = $item['kategori'] === 'tidak_ada_data';
+                        $trendPct = $item['trend_pct'] ?? null;
+                        $trendNaik = $item['trend_naik'] ?? null;
+                        $hasTrend = !$isNoData && $trendPct !== null;
+                        $trendClass = $trendNaik ? 'up' : 'down';
                     @endphp
                     <div class="item-card {{ $item['kategori'] }}"
                         onclick="openDetail({{ $item['metric_id'] }}, '{{ addslashes($item['nama_item']) }}')">
@@ -635,14 +729,24 @@
                                 <span class="badge-label">
                                     @if ($item['kategori'] === 'kurang') Non-Achieve
                                     @elseif ($item['kategori'] === 'tercapai') Achieve
-                                    @else Over-Achieve
+                                    @elseif ($item['kategori'] === 'melampaui') Over-Achieve
+                                    @else No Data
                                     @endif
                                 </span>
-                                <span class="badge-pct">{{ $item['persen_achievement'] }}%</span>
+                                <span class="badge-pct">
+                                    {{ $isNoData ? '—' : $item['persen_achievement'] . '%' }}
+                                </span>
                             </div>
 
                             {{-- Emoji at top-right, enlarged --}}
-                            @if ($item['kategori'] === 'kurang')
+                            @if ($isNoData)
+                                <svg class="face-top" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" fill="#9ca3af" />
+                                    <circle cx="9" cy="10" r="1.2" fill="#fff" />
+                                    <circle cx="15" cy="10" r="1.2" fill="#fff" />
+                                    <line x1="8" y1="15" x2="16" y2="15" stroke="#fff" stroke-width="1.5" stroke-linecap="round" />
+                                </svg>
+                            @elseif ($item['kategori'] === 'kurang')
                                 <svg class="face-top" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="10" fill="#dc2626" />
                                     <circle cx="9" cy="10" r="1.2" fill="#fff" />
@@ -672,26 +776,36 @@
                         {{-- Row 4: Target/Actual (left) + trend arrow with delta % (right, bigger) --}}
                         <div class="bottom-row">
                             <div class="values-left">
-                                <div>Target: {{ number_format($item['nilai_target'], 2) }} {{ $item['satuan'] }}</div>
-                                <div>Actual: {{ number_format($item['nilai_actual'], 2) }} {{ $item['satuan'] }}</div>
+                                <div>Target:
+                                    {{ $item['nilai_target'] !== null ? number_format($item['nilai_target'], 2) . ' ' . $item['satuan'] : '-' }}
+                                </div>
+                                <div>Actual:
+                                    {{ $item['nilai_actual'] !== null ? number_format($item['nilai_actual'], 2) . ' ' . $item['satuan'] : '-' }}
+                                </div>
                             </div>
                             <div class="indicator-right">
-                                <div class="trend-arrow {{ $trendClass }}">
-                                    @if ($isUp)
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                                            <polyline points="17 6 23 6 23 12"></polyline>
-                                        </svg>
-                                    @else
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                            <polyline points="17 18 23 18 23 12"></polyline>
-                                        </svg>
-                                    @endif
-                                    <span>{{ $isUp ? '+' : '-' }}{{ $delta }}%</span>
-                                </div>
+                                @if ($isNoData)
+                                    <span style="font-size: 12px; color: #9ca3af;">No report yet</span>
+                                @elseif (!$hasTrend)
+                                    <span style="font-size: 12px; color: #9ca3af;">vs last month: -</span>
+                                @else
+                                    <div class="trend-arrow {{ $trendClass }}">
+                                        @if ($trendNaik)
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                                <polyline points="17 6 23 6 23 12"></polyline>
+                                            </svg>
+                                        @else
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                                                <polyline points="17 18 23 18 23 12"></polyline>
+                                            </svg>
+                                        @endif
+                                        <span>{{ $trendNaik ? '+' : '-' }}{{ abs($trendPct) }}%</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -734,16 +848,17 @@
 
             const achieveCount = {{ $totalAchieve }};
             const nonAchieveCount = {{ $totalNonAchieve }};
+            const noDataCount = {{ $totalNoData }};
 
-            if (achieveCount > 0 || nonAchieveCount > 0) {
+            if (achieveCount > 0 || nonAchieveCount > 0 || noDataCount > 0) {
                 new Chart(document.getElementById('summaryPieChart'), {
                     type: 'pie',
                     plugins: [ChartDataLabels],
                     data: {
-                        labels: ['Achieve', 'Non-Achieve'],
+                        labels: ['Achieve', 'Non-Achieve', 'No Data'],
                         datasets: [{
-                            data: [achieveCount, nonAchieveCount],
-                            backgroundColor: ['#16a34a', '#dc2626'],
+                            data: [achieveCount, nonAchieveCount, noDataCount],
+                            backgroundColor: ['#16a34a', '#dc2626', '#9ca3af'],
                             borderWidth: 0
                         }]
                     },

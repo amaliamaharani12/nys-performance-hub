@@ -71,9 +71,11 @@ class TargetSeeder extends Seeder
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [1.466, 18.824, 0, 0, 0, null, null, null, null, null, null, null],
-            [0.033, 0, 0, 69.639, 0, null, null, null, null, null, null, null],
-            [36.636, 39.468, 38.048, 30.171, 28.447, 31.946, 36.818, 37.99, 23.548, 21.513, 33.433, 36.011],
+            // Plan-nya di Excel memang 0 (zero-tolerance target) untuk 3 metric ini.
+            // Sebelumnya kolom Actual yang ke-copy ke sini secara tidak sengaja.
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ];
 
         $metrics = Metric::orderBy('id')->get();
