@@ -6,6 +6,8 @@
     <title>{{ config('app.name') }} - Progress Achievement</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -22,16 +24,77 @@
         .navbar {
             background: #ffffff;
             border-bottom: 1px solid #e5e7eb;
-            padding: 16px 30px;
+            padding: 12px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .navbar h1 {
-            font-size: 20px;
+        .navbar-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            height: 46px;
+            object-fit: contain;
+        }
+
+        .navbar-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar-center h1 {
+            font-size: 22px;
             margin: 0;
-            color: #1d4ed8;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 2px 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .navbar-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-public {
+            background-color: #69f0ae;
+            color: #064e3b;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-login {
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            text-decoration: none;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-login:hover {
+            background-color: #f3f4f6;
+            color: #111827;
         }
 
         .container {
@@ -61,42 +124,40 @@
         }
 
         .filter-group label {
-            font-size: 12px;
+            font-size: 14px;
             color: #6b7280;
             font-weight: 600;
+            margin-bottom: 2px;
         }
 
-        .filter-group select {
-            appearance: none;
-            -webkit-appearance: none;
+        /* Choices.js Theme Overrides */
+        .choices {
+            margin-bottom: 0;
             width: 100%;
-            padding: 10px 36px 10px 16px;
+        }
+        
+        .choices__inner {
+            background-color: #f9fafb;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
+            padding: 4px 16px;
+            min-height: 42px;
             font-size: 14px;
             font-weight: 500;
             color: #374151;
-            min-width: 180px;
-            background-color: #f9fafb;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            transition: all 0.2s ease;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            cursor: pointer;
+            display: flex;
+            align-items: center;
         }
-
-        .filter-group select:hover {
-            border-color: #d1d5db;
-            background-color: #ffffff;
-        }
-
-        .filter-group select:focus {
-            outline: none;
+        
+        .is-focused .choices__inner, .is-open .choices__inner {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-            background-color: #ffffff;
+        }
+        
+        .choices__list--dropdown .choices__item--selectable.is-highlighted {
+            background-color: #eff6ff;
+            color: #1d4ed8;
         }
 
         .summary-bar {
@@ -113,6 +174,9 @@
             padding: 16px 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             border-left: 4px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .summary-card.achieve {
@@ -372,9 +436,34 @@
 <body>
 
     <div class="navbar">
-        <h1>Progress Achievement</h1>
-        <span
-            style="font-size: 13px; color: #6b7280;">{{ auth()->check() ? auth()->user()->name : 'Public View' }}</span>
+        <div class="navbar-left">
+            <!-- As a fallback if logo-pemi.png doesn't exist, it displays text exactly like the logo -->
+            <img src="{{ asset('img/logo-pemi.png') }}" alt="Logo" class="navbar-logo" onerror="this.outerHTML='<div style=\'display:flex; flex-direction:column; line-height:1;\'><h2 style=\'color: #e11d48; margin:0; font-weight: 900; font-size: 26px; letter-spacing: 1px;\'>YAZAKI</h2><span style=\'font-size:10px; font-weight:600; color:#374151; margin-top:4px;\'>PT. EDS MANUFACTURING INDONESIA</span></div>'" />
+        </div>
+        
+        <div class="navbar-center">
+            <h1>Progress Achievement</h1>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="badge-public">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                {{ auth()->check() ? auth()->user()->name : 'Public View' }}
+            </div>
+            
+            @if(auth()->check())
+                <form action="{{ Route::has('logout') ? route('logout') : url('/logout') }}" method="POST" style="margin: 0;">
+                    @csrf
+                    <button type="submit" class="btn-login" title="Logout">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </button>
+                </form>
+            @else
+                <a href="{{ Route::has('login') ? route('login') : url('/login') }}" class="btn-login" title="Login">
+                    <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </a>
+            @endif
+        </div>
     </div>
 
     <div class="container">
@@ -417,12 +506,29 @@
 
                 <div class="summary-bar">
                     <div class="summary-card achieve">
-                        <div class="num">{{ $totalAchieve }}</div>
-                        <div class="label">Achieve Items (including over-achieve)</div>
+                        <div>
+                            <div class="num">{{ $totalAchieve }}</div>
+                            <div class="label">Achieve Items (including over-achieve)</div>
+                        </div>
+                        <div style="opacity: 0.15; color: #16a34a; flex-shrink: 0; margin-left: 10px;">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
                     </div>
                     <div class="summary-card non-achieve">
-                        <div class="num">{{ $totalNonAchieve }}</div>
-                        <div class="label">Non-Achieve Items</div>
+                        <div>
+                            <div class="num">{{ $totalNonAchieve }}</div>
+                            <div class="label">Non-Achieve Items</div>
+                        </div>
+                        <div style="opacity: 0.15; color: #dc2626; flex-shrink: 0; margin-left: 10px;">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="15" y1="9" x2="9" y2="15"></line>
+                              <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -541,6 +647,15 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            const selects = document.querySelectorAll('.filter-group select');
+            selects.forEach(select => {
+                new Choices(select, {
+                    searchEnabled: false,
+                    itemSelectText: '',
+                    shouldSort: false,
+                });
+            });
+
             const achieveCount = {{ $totalAchieve }};
             const nonAchieveCount = {{ $totalNonAchieve }};
             
