@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>{{ config('app.name') }} - Progress Achievement</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -47,7 +48,7 @@
             gap: 20px;
             flex-wrap: wrap;
             align-items: flex-end;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
         }
 
@@ -55,6 +56,8 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            flex: 1;
+            min-width: 150px;
         }
 
         .filter-group label {
@@ -64,21 +67,47 @@
         }
 
         .filter-group select {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
+            appearance: none;
+            -webkit-appearance: none;
+            width: 100%;
+            padding: 10px 36px 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
             font-size: 14px;
-            min-width: 160px;
+            font-weight: 500;
+            color: #374151;
+            min-width: 180px;
+            background-color: #f9fafb;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+
+        .filter-group select:hover {
+            border-color: #d1d5db;
+            background-color: #ffffff;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            background-color: #ffffff;
         }
 
         .summary-bar {
             display: flex;
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 0;
         }
 
         .summary-card {
             flex: 1;
+            min-width: 240px;
             background: #ffffff;
             border-radius: 10px;
             padding: 16px 20px;
@@ -102,6 +131,37 @@
         .summary-card .label {
             font-size: 13px;
             color: #6b7280;
+        }
+
+        .top-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .right-panel {
+            flex: 0 0 350px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+        
+        .chart-container {
+            position: absolute;
+            top: 8px;
+            bottom: 8px;
+            left: 12px;
+            right: 12px;
         }
 
         .grid {
@@ -133,7 +193,7 @@
         }
 
         .item-card.melampaui {
-            border-top-color: #d4af37;
+            border-top-color: #16a34a;
         }
 
         .item-card .group-tag {
@@ -189,7 +249,7 @@
         }
         .kurang   .badge-box .badge-pct { color: #dc2626; }
         .tercapai .badge-box .badge-pct { color: #16a34a; }
-        .melampaui .badge-box .badge-pct { color: #b8860b; }
+        .melampaui .badge-box .badge-pct { color: #16a34a; }
 
         /* Emoji at top-right, bigger */
         .face-top {
@@ -231,7 +291,7 @@
         }
         .trend-arrow.up   { color: #16a34a; }
         .trend-arrow.down { color: #dc2626; }
-        .trend-arrow.gold { color: #b8860b; }
+        .trend-arrow.gold { color: #16a34a; }
 
         .empty-state {
             text-align: center;
@@ -319,48 +379,58 @@
 
     <div class="container">
 
-        <form class="filter-bar" method="GET" action="{{ route('progress-achievement') }}" id="filterForm">
-            <div class="filter-group">
-                <label>Period</label>
-                <select name="periode" onchange="document.getElementById('filterForm').submit()">
-                    @foreach ($availablePeriods as $p)
-                        <option value="{{ $p->format('Y-m-d') }}" {{ $periode === $p->format('Y-m-d') ? 'selected' : '' }}>
-                            {{ $p->format('F Y') }}
-                        </option>
-                    @endforeach
-                </select>
+        <div class="top-section">
+            <div class="left-panel">
+                <form class="filter-bar" method="GET" action="{{ route('progress-achievement') }}" id="filterForm">
+                    <div class="filter-group">
+                        <label>Period</label>
+                        <select name="periode" onchange="document.getElementById('filterForm').submit()">
+                            @foreach ($availablePeriods as $p)
+                                <option value="{{ $p->format('Y-m-d') }}" {{ $periode === $p->format('Y-m-d') ? 'selected' : '' }}>
+                                    {{ $p->format('F Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Group</label>
+                        <select name="group_id" onchange="document.getElementById('filterForm').submit()">
+                            <option value="all" {{ $groupId === 'all' ? 'selected' : '' }}>All Groups</option>
+                            @foreach ($groups as $g)
+                                <option value="{{ $g->id }}" {{ (string) $groupId === (string) $g->id ? 'selected' : '' }}>
+                                    Group {{ $g->kode_group }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select name="status" onchange="document.getElementById('filterForm').submit()">
+                            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>All</option>
+                            <option value="achieve" {{ $status === 'achieve' ? 'selected' : '' }}>Achieve</option>
+                            <option value="non_achieve" {{ $status === 'non_achieve' ? 'selected' : '' }}>Non-Achieve</option>
+                        </select>
+                    </div>
+                </form>
+
+                <div class="summary-bar">
+                    <div class="summary-card achieve">
+                        <div class="num">{{ $totalAchieve }}</div>
+                        <div class="label">Achieve Items (including over-achieve)</div>
+                    </div>
+                    <div class="summary-card non-achieve">
+                        <div class="num">{{ $totalNonAchieve }}</div>
+                        <div class="label">Non-Achieve Items</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="filter-group">
-                <label>Group</label>
-                <select name="group_id" onchange="document.getElementById('filterForm').submit()">
-                    <option value="all" {{ $groupId === 'all' ? 'selected' : '' }}>All Groups</option>
-                    @foreach ($groups as $g)
-                        <option value="{{ $g->id }}" {{ (string) $groupId === (string) $g->id ? 'selected' : '' }}>
-                            Group {{ $g->kode_group }} - {{ $g->nama_group }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Status</label>
-                <select name="status" onchange="document.getElementById('filterForm').submit()">
-                    <option value="all" {{ $status === 'all' ? 'selected' : '' }}>All</option>
-                    <option value="achieve" {{ $status === 'achieve' ? 'selected' : '' }}>Achieve</option>
-                    <option value="non_achieve" {{ $status === 'non_achieve' ? 'selected' : '' }}>Non-Achieve</option>
-                </select>
-            </div>
-        </form>
-
-        <div class="summary-bar">
-            <div class="summary-card achieve">
-                <div class="num">{{ $totalAchieve }}</div>
-                <div class="label">Achieve Items (including over-achieve)</div>
-            </div>
-            <div class="summary-card non-achieve">
-                <div class="num">{{ $totalNonAchieve }}</div>
-                <div class="label">Non-Achieve Items</div>
+            <div class="right-panel">
+                <div class="chart-container">
+                    <canvas id="summaryPieChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -412,7 +482,7 @@
                                 </svg>
                             @else
                                 <svg class="face-top" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10" fill="#d4af37" />
+                                    <circle cx="12" cy="12" r="10" fill="#16a34a" />
                                     <path d="M8 9.5c0-0.5 0.4-1 1-1s1 0.5 1 1M14 9.5c0-0.5 0.4-1 1-1s1 0.5 1 1" stroke="#fff" stroke-width="1.4" stroke-linecap="round" />
                                     <path d="M7.5 13.5c1.2 2 2.8 2.8 4.5 2.8s3.3-0.8 4.5-2.8" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" />
                                 </svg>
@@ -470,6 +540,54 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const achieveCount = {{ $totalAchieve }};
+            const nonAchieveCount = {{ $totalNonAchieve }};
+            
+            if (achieveCount > 0 || nonAchieveCount > 0) {
+                new Chart(document.getElementById('summaryPieChart'), {
+                    type: 'pie',
+                    plugins: [ChartDataLabels],
+                    data: {
+                        labels: ['Achieve', 'Non-Achieve'],
+                        datasets: [{
+                            data: [achieveCount, nonAchieveCount],
+                            backgroundColor: ['#16a34a', '#dc2626'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: 4
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 12,
+                                    font: { size: 12 }
+                                }
+                            },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 16
+                                },
+                                formatter: (value, context) => {
+                                    if (value === 0) return '';
+                                    let total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
+                                    return Math.round((value / total) * 100) + "%";
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
         let detailChartInstance = null;
 
         function openDetail(metricId, namaItem) {

@@ -76,7 +76,6 @@ class ProgressAchievementController extends Controller
                 'metric_id' => $metric->id,
                 'nama_item' => $metric->nama_item,
                 'kode_group' => $metric->group->kode_group,
-                'nama_group' => $metric->group->nama_group,
                 'satuan' => $metric->satuan,
                 'arah_target' => $metric->arah_target,
                 'nilai_target' => $nilaiTarget,

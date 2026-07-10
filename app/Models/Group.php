@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    protected $fillable = ['nama_group', 'kode_group'];
+    protected $fillable = ['kode_group'];
 
     public function metrics()
     {
