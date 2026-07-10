@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_group');
+            $table->string('nama_group')->nullable();
             $table->string('kode_group')->unique();
             $table->timestamps();
         });

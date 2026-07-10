@@ -12,7 +12,7 @@ class ActualSeeder extends Seeder
 {
     public function run(): void
     {
-        // Siapkan lookup user PIC per kode group, misal 'A' => id user pic.a@nys.test
+        // Lookup user PIC per kode group
         $picByGroup = [];
         foreach (range('A', 'K') as $kode) {
             $user = User::where('email', 'pic.' . strtolower($kode) . '@nys.test')->first();
@@ -27,7 +27,8 @@ class ActualSeeder extends Seeder
             $months[] = $start->copy()->addMonths($i);
         }
 
-        // Nilai actual per bulan, urutan sesuai urutan metric di MetricSeeder (52 baris)
+        // Nilai actual per bulan, MURNI dari sample Excel (bahan_kpi.xlsx sheet 'summary')
+        // null = memang tidak ada data di sample, TIDAK di-generate/dikarang
         $actualPerMetric = [
             [165.779, 147.525, 159.048, 152.134, 142.114, null, null, null, null, null, null, null],
             [3, 1, 0, 1, 0, null, null, null, null, null, null, null],
@@ -90,29 +91,14 @@ class ActualSeeder extends Seeder
             $inputBy = $picByGroup[$metric->group->kode_group] ?? 1;
 
             foreach ($months as $i => $month) {
-                $val = $actualValues[$i];
-                
-                if ($val === null) {
-                    // Look up target to generate mock actual
-                    $target = \App\Models\Target::where('metric_id', $metric->id)
-                        ->where('periode_mulai', $month->format('Y-m-d'))
-                        ->first();
-                    
-                    if ($target) {
-                        $targetVal = (float) $target->nilai_target;
-                        // Use a deterministic seed/hash for consistent mock values
-                        $hash = crc32($metric->id . $month->format('Y-m-d'));
-                        $percent = 90 + ($hash % 16); // generates 90% to 105%
-                        $val = round($targetVal * ($percent / 100), 3);
-                    } else {
-                        continue;
-                    }
+                if ($actualValues[$i] === null) {
+                    continue;
                 }
 
                 Actual::create([
                     'metric_id' => $metric->id,
                     'periode' => $month->format('Y-m-d'),
-                    'nilai_actual' => $val,
+                    'nilai_actual' => $actualValues[$i],
                     'input_by' => $inputBy,
                     'sumber' => 'upload',
                     'status' => 'approved',
