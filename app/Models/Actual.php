@@ -8,6 +8,13 @@ class Actual extends Model
 {
     protected $fillable = ['metric_id', 'periode', 'nilai_actual', 'input_by', 'sumber', 'status', 'catatan'];
 
+    protected function casts(): array
+    {
+        return [
+            'periode' => 'date',
+        ];
+    }
+
     public function metric()
     {
         return $this->belongsTo(Metric::class);

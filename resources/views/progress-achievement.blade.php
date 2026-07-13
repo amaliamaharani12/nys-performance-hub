@@ -289,7 +289,8 @@
             cursor: pointer;
             border-top: 4px solid #d1d5db;
             transition: transform 0.12s ease;
-            min-width: 0;       /* allow flex children to shrink */
+            min-width: 0;
+            /* allow flex children to shrink */
             overflow: hidden;
         }
 
