@@ -48,7 +48,8 @@
 
         .navbar-center {
             flex: 1 1 auto;
-            min-width: 0;        /* allow shrinking */
+            min-width: 0;
+            /* allow shrinking */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -207,15 +208,16 @@
 
         .summary-card {
             flex: 1;
-            min-width: 240px;
+            min-width: 140px;
             background: #ffffff;
             border-radius: 10px;
-            padding: 16px 20px;
+            padding: 12px 16px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             border-left: 4px solid #d1d5db;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 8px;
         }
 
         .summary-card.achieve {
@@ -231,13 +233,15 @@
         }
 
         .summary-card .num {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
+            line-height: 1.1;
         }
 
         .summary-card .label {
-            font-size: 13px;
+            font-size: 12px;
             color: #6b7280;
+            line-height: 1.2;
         }
 
         .top-section {
@@ -273,18 +277,20 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(5, 1fr);
             gap: 14px;
         }
 
         .item-card {
             background: #ffffff;
             border-radius: 10px;
-            padding: 14px 16px;
+            padding: 14px 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             cursor: pointer;
             border-top: 4px solid #d1d5db;
             transition: transform 0.12s ease;
+            min-width: 0;       /* allow flex children to shrink */
+            overflow: hidden;
         }
 
         .item-card:hover {
@@ -318,9 +324,12 @@
         .item-name-center {
             text-align: center;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12.5px;
             margin-bottom: 6px;
             line-height: 1.35;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Badge row: badge on the left, emoji on the right */
@@ -505,8 +514,13 @@
 
         /* ---- Responsive: layout only (navbar always stays 1 row) ---- */
         @media (max-width: 1200px) {
-            .navbar  { padding: 10px 20px; }
-            .container { padding: 20px 20px 60px; }
+            .navbar {
+                padding: 10px 20px;
+            }
+
+            .container {
+                padding: 20px 20px 60px;
+            }
         }
 
         @media (max-width: 900px) {
@@ -517,11 +531,25 @@
         }
 
         @media (max-width: 700px) {
+
             /* Hide the eye icon text, keep icon only */
-            .badge-label-text { display: none; }
-            .badge-public { padding: 6px 8px; }
-            .navbar-logo { height: 38px; }
-            .navbar-center .title-icon { width: 20px; height: 20px; min-width: 20px; }
+            .badge-label-text {
+                display: none;
+            }
+
+            .badge-public {
+                padding: 6px 8px;
+            }
+
+            .navbar-logo {
+                height: 38px;
+            }
+
+            .navbar-center .title-icon {
+                width: 20px;
+                height: 20px;
+                min-width: 20px;
+            }
         }
 
         @media (max-width: 1024px) {
@@ -533,27 +561,45 @@
             .right-panel {
                 flex: none;
                 width: 100%;
-                height: 320px;
+                max-width: 380px;
+                height: 240px;
+                margin: 0 auto;
             }
 
             .chart-container {
                 position: absolute;
-                top: 12px;
-                bottom: 12px;
+                top: 8px;
+                bottom: 8px;
                 left: 12px;
                 right: 12px;
             }
         }
 
         @media (max-width: 768px) {
-            .filter-bar { gap: 12px; }
-
-            .summary-bar {
-                flex-direction: column;
+            .filter-bar {
                 gap: 12px;
             }
 
-            .summary-card { min-width: 0; }
+            .summary-bar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .summary-card {
+                min-width: 130px;
+                padding: 10px 12px;
+            }
+
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -656,8 +702,8 @@
                             <div class="num">{{ $totalAchieve }}</div>
                             <div class="label">Achieve Items (including over-achieve)</div>
                         </div>
-                        <div style="opacity: 0.15; color: #16a34a; flex-shrink: 0; margin-left: 10px;">
-                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        <div style="opacity: 0.15; color: #16a34a; flex-shrink: 0;">
+                            <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
@@ -669,8 +715,8 @@
                             <div class="num">{{ $totalNonAchieve }}</div>
                             <div class="label">Non-Achieve Items</div>
                         </div>
-                        <div style="opacity: 0.15; color: #dc2626; flex-shrink: 0; margin-left: 10px;">
-                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        <div style="opacity: 0.15; color: #dc2626; flex-shrink: 0;">
+                            <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <line x1="15" y1="9" x2="9" y2="15"></line>
@@ -683,8 +729,8 @@
                             <div class="num">{{ $totalNoData }}</div>
                             <div class="label">No Data Yet</div>
                         </div>
-                        <div style="opacity: 0.15; color: #9ca3af; flex-shrink: 0; margin-left: 10px;">
-                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        <div style="opacity: 0.15; color: #9ca3af; flex-shrink: 0;">
+                            <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <line x1="12" y1="8" x2="12" y2="12"></line>
