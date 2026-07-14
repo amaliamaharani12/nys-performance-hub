@@ -11,6 +11,7 @@
 
         :root {
             --sidebar-w: 240px;
+            --sidebar-w-collapsed: 68px;
             --sidebar-bg: #eff6ff; /* Bright pastel blue background */
             --sidebar-hover: #dbeafe; /* Pastel blue hover */
             --sidebar-active: #1d4ed8; /* Strong blue active background */
@@ -49,14 +50,94 @@
             top: 0; left: 0; bottom: 0;
             z-index: 100;
             border-right: 1px solid #dbeafe;
+            transition: width 0.18s ease;
+            overflow: visible;
         }
 
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 26px;
+            right: -13px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #fff;
+            border: 1px solid #dbeafe;
+            box-shadow: 0 2px 5px rgba(15,23,42,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 101;
+            color: #1d4ed8;
+            padding: 0;
+        }
+
+        .sidebar-toggle-btn svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.18s ease;
+        }
+
+        body.sidebar-collapsed .sidebar-toggle-btn svg {
+            transform: rotate(180deg);
+        }
+
+        body.sidebar-collapsed .sidebar { width: var(--sidebar-w-collapsed); }
+        body.sidebar-collapsed .main { margin-left: var(--sidebar-w-collapsed); }
+
+        body.sidebar-collapsed .nav-section-label,
+        body.sidebar-collapsed .nav-text,
+        body.sidebar-collapsed .user-name,
+        body.sidebar-collapsed .user-email,
+        body.sidebar-collapsed .logout-text,
+        body.sidebar-collapsed .sidebar-brand-full {
+            display: none;
+        }
+
+        body.sidebar-collapsed .nav-item {
+            justify-content: center;
+            padding: 10px 0;
+            gap: 0;
+        }
+
+        body.sidebar-collapsed .nav-item.active::before {
+            border-radius: 0;
+        }
+
+        body.sidebar-collapsed .sidebar-footer .user-info {
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        body.sidebar-collapsed .logout-btn {
+            padding: 8px;
+        }
+
+        .sidebar-brand-compact {
+            display: none;
+            width: 48px;
+            height: 48px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .sidebar-brand-compact img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        body.sidebar-collapsed .sidebar-brand-compact { display: flex; }
+
         .sidebar-brand {
-            padding: 24px 20px 20px;
+            padding: 16px 20px;
             border-bottom: 1px solid #dbeafe;
             display: flex;
             align-items: center;
             gap: 12px;
+            height: 84px;
         }
 
         .sidebar-brand img {
@@ -209,6 +290,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            transition: margin-left 0.18s ease;
         }
 
         .topbar {
@@ -221,6 +303,7 @@
             position: sticky;
             top: 0;
             z-index: 50;
+            height: 84px;
         }
 
         .page-title {
@@ -406,10 +489,25 @@
 </head>
 <body>
 
+<script>
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+        document.body.classList.add('sidebar-collapsed');
+    }
+</script>
+
 <!-- ── Sidebar ── -->
 <aside class="sidebar">
+    <button type="button" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse/Expand sidebar">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
     <div class="sidebar-brand" style="justify-content: center;">
-        <img src="{{ asset('img/logo-pemi.png') }}" alt="Logo PEMI" style="max-height: 40px; width: auto; display: block; margin: 0 auto;">
+        <img src="{{ asset('img/logo-pemi.png') }}" alt="Logo PEMI" class="sidebar-brand-full" style="max-height: 40px; width: auto; margin: 0 auto;">
+        <div class="sidebar-brand-compact">
+            <img src="{{ asset('img/logo-pemi-icon.png') }}" alt="Logo">
+        </div>
     </div>
 
     <nav class="sidebar-nav">
@@ -420,7 +518,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
             </svg>
-            Dashboard
+            <span class="nav-text">Dashboard</span>
         </a>
 
         <div class="nav-section-label" style="margin-top:8px;">Data Entry</div>
@@ -430,7 +528,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
             </svg>
-            My Submissions
+            <span class="nav-text">My Submissions</span>
         </a>
 
         <a href="{{ route('pic.upload.index') }}"
@@ -439,7 +537,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
-            Import CSV
+            <span class="nav-text">Import CSV</span>
         </a>
 
         <div class="nav-section-label" style="margin-top:8px;">Profile</div>
@@ -449,7 +547,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
-            Edit Profile
+            <span class="nav-text">Edit Profile</span>
         </a>
 
         <div class="nav-section-label" style="margin-top:8px;">Links</div>
@@ -458,7 +556,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
             </svg>
-            Public View
+            <span class="nav-text">Public View</span>
         </a>
     </nav>
 
@@ -477,7 +575,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                 </svg>
-                Logout
+                <span class="logout-text">Logout</span>
             </button>
         </form>
     </div>
@@ -558,6 +656,11 @@
 
 <script>
 (function() {
+    window.toggleSidebar = function() {
+        document.body.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+    };
+
     let _pendingAction = null;
 
     window.openConfirmModal = function(opts) {

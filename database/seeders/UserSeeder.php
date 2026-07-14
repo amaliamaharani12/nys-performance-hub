@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'admin',
             'group_id' => null,
+            'is_aktif' => true,
         ]);
 
         $groups = Group::orderBy('kode_group')->get();
@@ -28,6 +29,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'pic',
                 'group_id' => $group->id,
+                'is_aktif' => true,
             ]);
         }
     }
