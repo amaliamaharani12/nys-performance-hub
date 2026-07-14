@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProgressAchievementController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\PicController;
@@ -15,6 +16,8 @@ use App\Http\Controllers\Pic\UploadController;
 // Public
 Route::get('/progress-achievement', [ProgressAchievementController::class, 'index'])->name('progress-achievement');
 Route::get('/progress-achievement/{metric}/detail', [ProgressAchievementController::class, 'detail'])->name('progress-achievement.detail');
+Route::get('/progress-achievement/export/excel', [ExportController::class, 'excel'])->name('progress-achievement.export.excel');
+Route::get('/progress-achievement/export/pdf', [ExportController::class, 'pdf'])->name('progress-achievement.export.pdf');
 
 Route::get('/', function () {
     return redirect('/login');
