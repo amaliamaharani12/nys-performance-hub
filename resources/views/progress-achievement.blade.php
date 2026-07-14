@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -166,6 +167,155 @@
             color: #6b7280;
             font-weight: 600;
             margin-bottom: 2px;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+            align-self: center;
+        }
+
+        .dropdown-wrap {
+            position: relative;
+        }
+
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+        }
+
+        .btn-action.secondary {
+            background: #ffffff;
+            color: #2563eb;
+            border: 1.5px solid #dbeafe;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.32);
+        }
+
+        .btn-action.secondary:hover {
+            background: #eff6ff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+        }
+
+        .btn-action svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .btn-action .chevron {
+            width: 11px;
+            height: 11px;
+            margin-left: 1px;
+            opacity: 0.85;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 200px;
+            background: #ffffff;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+            padding: 6px;
+            z-index: 40;
+        }
+
+        .dropdown-menu.open {
+            display: block;
+        }
+
+        .dropdown-menu button {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 8px 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #374151;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .dropdown-menu button:hover {
+            background: #f3f4f6;
+        }
+
+        .dropdown-menu .menu-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .dropdown-menu .menu-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .menu-icon.excel {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .menu-icon.pdf {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .menu-icon.image {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .dropdown-menu .menu-divider {
+            height: 1px;
+            background: #f0f1f3;
+            margin: 4px 4px;
+        }
+
+        .dropdown-menu .menu-note {
+            padding: 4px 8px 2px;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #9ca3af;
+        }
+
+        @media print {
+
+            .filter-bar,
+            .action-bar,
+            .top-section,
+            .modal-overlay {
+                display: none !important;
+            }
         }
 
         /* Choices.js Theme Overrides */
@@ -624,7 +774,7 @@
             <div class="title-underline"></div>
         </div>
 
-        <div class="navbar-right">
+        <div class="navbar-right export-hide">
             <div class="badge-public">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -694,6 +844,119 @@
                             <option value="tidak_ada_data" {{ $status === 'tidak_ada_data' ? 'selected' : '' }}>No Data
                             </option>
                         </select>
+                    </div>
+
+                    <div class="action-bar export-hide">
+                        <div class="dropdown-wrap">
+                            <button type="button" class="btn-action" onclick="toggleExportMenu('downloadMenu')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu" id="downloadMenu">
+                                <button type="button" onclick="downloadExcel()">
+                                    <span class="menu-icon excel">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                                            <line x1="15" y1="3" x2="15" y2="21"></line>
+                                        </svg>
+                                    </span>
+                                    Excel (.xlsx)
+                                </button>
+                                <button type="button" onclick="downloadPdf()">
+                                    <span class="menu-icon pdf">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                            </path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                        </svg>
+                                    </span>
+                                    PDF
+                                </button>
+                                <button type="button" onclick="downloadImage()">
+                                    <span class="menu-icon image">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                    </span>
+                                    Image (PNG)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-wrap">
+                            <button type="button" class="btn-action secondary" onclick="toggleExportMenu('printMenu')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path
+                                        d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2">
+                                    </path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                Print
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu" id="printMenu">
+                                <button type="button" onclick="printPdf()">
+                                    <span class="menu-icon pdf">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                            </path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                        </svg>
+                                    </span>
+                                    PDF
+                                </button>
+                                <button type="button" onclick="printImage()">
+                                    <span class="menu-icon image">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                    </span>
+                                    Image
+                                </button>
+                                <button type="button" onclick="printExcelNotice()">
+                                    <span class="menu-icon excel">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                                            <line x1="15" y1="3" x2="15" y2="21"></line>
+                                        </svg>
+                                    </span>
+                                    Excel
+                                </button>
+                                <div class="menu-divider"></div>
+                                <div class="menu-note">Excel will be downloaded first — print it manually from
+                                    Excel.</div>
+                            </div>
+                        </div>
                     </div>
                 </form>
 
@@ -982,6 +1245,80 @@
 
         function closeDetail() {
             document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // ─── Export: Download & Print (Excel / PDF / Image) ────────────────────
+        function toggleExportMenu(id) {
+            document.querySelectorAll('.dropdown-menu').forEach(function (el) {
+                if (el.id !== id) el.classList.remove('open');
+            });
+            document.getElementById(id).classList.toggle('open');
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.dropdown-wrap')) {
+                document.querySelectorAll('.dropdown-menu').forEach(function (el) {
+                    el.classList.remove('open');
+                });
+            }
+        });
+
+        function exportQueryString() {
+            const params = new URLSearchParams({
+                periode: '{{ $periode }}',
+                group_id: '{{ $groupId }}',
+                status: '{{ $status }}',
+            });
+            return params.toString();
+        }
+
+        function downloadExcel() {
+            window.location.href = '{{ route('progress-achievement.export.excel') }}?' + exportQueryString();
+        }
+
+        function downloadPdf() {
+            window.location.href = '{{ route('progress-achievement.export.pdf') }}?' + exportQueryString();
+        }
+
+        function captureFullAsCanvas(callback) {
+            html2canvas(document.body, {
+                backgroundColor: '#f4f6f9',
+                scale: 2,
+                useCORS: true,
+                ignoreElements: (el) => el.classList && el.classList.contains('export-hide')
+            }).then(callback);
+        }
+
+        function downloadImage() {
+            captureFullAsCanvas(function (canvas) {
+                const link = document.createElement('a');
+                link.download = 'progress-achievement-{{ $periode }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function printPdf() {
+            // The PDF opens in a new tab — use the print button in the PDF viewer
+            window.open('{{ route('progress-achievement.export.pdf') }}?' + exportQueryString(), '_blank');
+        }
+
+        function printImage() {
+            captureFullAsCanvas(function (canvas) {
+                const dataUrl = canvas.toDataURL('image/png');
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(
+                    '<html><head><title>Print Progress Achievement</title></head>' +
+                    '<body style="margin:0"><img src="' + dataUrl +
+                    '" style="width:100%" onload="window.print()"></body></html>'
+                );
+                printWindow.document.close();
+            });
+        }
+
+        function printExcelNotice() {
+            alert('Excel files can\'t be printed directly from the browser. The file will be downloaded — please print it manually from Excel.');
+            downloadExcel();
         }
     </script>
 
