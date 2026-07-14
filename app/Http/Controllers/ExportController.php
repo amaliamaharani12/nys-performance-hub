@@ -15,11 +15,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ExportController extends Controller
 {
-    /**
-     * Ambil item Progress Achievement sesuai filter aktif (periode, group, status).
-     * Logic hitungannya sama persis kayak ProgressAchievementController@index,
-     * cuma tanpa trend (ga dipakai di export).
-     */
     private function buildItems(Request $request): array
     {
         $periode = $request->input('periode');
@@ -117,7 +112,58 @@ class ExportController extends Controller
 
     private function judulPeriode(?string $periode): string
     {
-        return $periode ? Carbon::parse($periode)->translatedFormat('F Y') : '-';
+        return $periode ? Carbon::parse($periode)->format('F Y') : '-';
+    }
+
+    /**
+     * Human-readable label for the Group filter, used in the PDF/Excel header.
+     */
+    private function groupLabel(Request $request): string
+    {
+        $groupId = $request->input('group_id', 'all');
+
+        if ($groupId === 'all') {
+            return 'All Groups';
+        }
+
+        $group = Group::find($groupId);
+
+        return $group ? 'Group ' . $group->kode_group : 'All Groups';
+    }
+
+    /**
+     * Human-readable label for the Status filter, used in the PDF/Excel header.
+     */
+    private function statusLabel(Request $request): string
+    {
+        return match ($request->input('status', 'all')) {
+            'achieve' => 'Achieve',
+            'non_achieve' => 'Non-Achieve',
+            'tidak_ada_data' => 'No Data',
+            default => 'All',
+        };
+    }
+
+    /**
+     * Counts used for the summary boxes at the top of the PDF/image export.
+     */
+    private function summaryCounts(array $items): array
+    {
+        $achieve = 0;
+        $nonAchieve = 0;
+        $noData = 0;
+
+        foreach ($items as $item) {
+            if ($item['kategori'] === 'tidak_ada_data') {
+                $noData++;
+            } elseif ($item['is_achieve']) {
+                $achieve++;
+            } else {
+                $nonAchieve++;
+            }
+        }
+
+        return compact('achieve', 'nonAchieve', 'noData');
     }
 
     public function excel(Request $request)
@@ -133,7 +179,11 @@ class ExportController extends Controller
         $sheet->mergeCells('A1:G1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
-        $headers = ['Group', 'Item', 'Satuan', 'Target', 'Actual', 'Achievement (%)', 'Status'];
+        $sheet->setCellValue('A2', $this->groupLabel($request) . ' • ' . $this->statusLabel($request) . ' • Generated ' . now()->format('d M Y H:i'));
+        $sheet->mergeCells('A2:G2');
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(9)->getColor()->setRGB('6B7280');
+
+        $headers = ['Group', 'Item', 'Unit', 'Target', 'Actual', 'Achievement (%)', 'Status'];
         $col = 'A';
         foreach ($headers as $h) {
             $sheet->setCellValue($col . '3', $h);
@@ -173,10 +223,16 @@ class ExportController extends Controller
     {
         $items = $this->buildItems($request);
         $judulPeriode = $this->judulPeriode($request->input('periode'));
+        $summary = $this->summaryCounts($items);
 
         $pdf = Pdf::loadView('exports.pdf', [
             'items' => $items,
             'judulPeriode' => $judulPeriode,
+            'groupLabel' => $this->groupLabel($request),
+            'statusLabel' => $this->statusLabel($request),
+            'totalAchieve' => $summary['achieve'],
+            'totalNonAchieve' => $summary['nonAchieve'],
+            'totalNoData' => $summary['noData'],
         ])->setPaper('a4', 'portrait');
 
         $filename = 'progress-achievement-' . str_replace(' ', '-', $judulPeriode) . '.pdf';
