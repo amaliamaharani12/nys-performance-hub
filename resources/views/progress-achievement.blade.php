@@ -67,18 +67,18 @@
         }
 
         .navbar-center .title-icon {
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
-            padding: 4px;
-            border-radius: 7px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            padding: 5px;
+            border-radius: 8px;
             background: linear-gradient(135deg, #1d4ed8, #3b82f6);
             color: #ffffff;
             flex-shrink: 0;
         }
 
         .navbar-center h1 {
-            font-size: clamp(14px, 2.5vw, 24px);
+            font-size: 24px;
             margin: 0;
             font-weight: 800;
             letter-spacing: 0.3px;
@@ -86,12 +86,10 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .navbar-center .title-underline {
-            width: 40px;
+            width: 56px;
             height: 3px;
             border-radius: 999px;
             background: linear-gradient(90deg, #1d4ed8, #3b82f6);

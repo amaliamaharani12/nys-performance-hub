@@ -27,9 +27,12 @@
         /* Item cards */
         table.cards { width: 100%; border-collapse: separate; border-spacing: 4px; margin-top: 6px; }
         table.cards td.card {
-            width: 33.33%; border: 1px solid #e5e7eb; border-radius: 6px;
+            width: 33.33%; border: 1px solid #e5e7eb; border-top: 3px solid #d1d5db; border-radius: 6px;
             padding: 8px 9px; vertical-align: top;
         }
+        table.cards td.card.achieve { border-top-color: #16a34a; }
+        table.cards td.card.non-achieve { border-top-color: #dc2626; }
+        table.cards td.card.no-data { border-top-color: #9ca3af; }
         .card .group { font-size: 8.5px; color: #6b7280; }
         .card .item-name { font-size: 10.5px; font-weight: bold; margin: 1px 0 6px; }
         .card .status-row { margin-bottom: 4px; }
@@ -89,7 +92,7 @@
                                 ? 'no-data'
                                 : ($item['kategori'] === 'kurang' ? 'non-achieve' : 'achieve');
                         @endphp
-                        <td class="card">
+                        <td class="card {{ $statusClass }}">
                             <div class="group">{{ $item['kode_group'] }}</div>
                             <div class="item-name">{{ $item['nama_item'] }}</div>
                             <div class="status-row">
