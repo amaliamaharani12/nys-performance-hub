@@ -29,6 +29,8 @@ class ExportController extends Controller
 
         $metrics = $metricsQuery->orderBy('group_id')->orderBy('id')->get();
 
+        $periodeSebelumnya = $periode ? Carbon::parse($periode)->subMonthNoOverflow()->format('Y-m-d') : null;
+
         $items = [];
 
         foreach ($metrics as $metric) {
@@ -40,6 +42,13 @@ class ExportController extends Controller
                 ->where('periode', $periode)
                 ->where('status', 'approved')
                 ->first();
+
+            $actualSebelumnya = $periodeSebelumnya
+                ? Actual::where('metric_id', $metric->id)
+                    ->where('periode', $periodeSebelumnya)
+                    ->where('status', 'approved')
+                    ->first()
+                : null;
 
             if (!$target || !$actual) {
                 $items[] = [
@@ -53,6 +62,8 @@ class ExportController extends Controller
                     'kategori' => 'tidak_ada_data',
                     'is_achieve' => null,
                     'label' => 'No Data',
+                    'trend_pct' => null,
+                    'trend_naik' => null,
                 ];
                 continue;
             }
@@ -85,6 +96,19 @@ class ExportController extends Controller
                 $label = 'Non-Achieve';
             }
 
+            $trendPct = null;
+            $trendNaik = null;
+            if ($actualSebelumnya) {
+                $nilaiSebelumnya = (float) $actualSebelumnya->nilai_actual;
+                if ($nilaiSebelumnya != 0) {
+                    $trendPct = round((($nilaiActual - $nilaiSebelumnya) / abs($nilaiSebelumnya)) * 100, 1);
+                    $trendNaik = $nilaiActual >= $nilaiSebelumnya;
+                } elseif ($nilaiActual == 0) {
+                    $trendPct = 0.0;
+                    $trendNaik = true;
+                }
+            }
+
             $items[] = [
                 'kode_group' => $metric->group->kode_group,
                 'nama_item' => $metric->nama_item,
@@ -96,6 +120,8 @@ class ExportController extends Controller
                 'kategori' => $kategori,
                 'is_achieve' => $persenAchievement >= 100,
                 'label' => $label,
+                'trend_pct' => $trendPct,
+                'trend_naik' => $trendNaik,
             ];
         }
 
@@ -233,7 +259,7 @@ class ExportController extends Controller
             'totalAchieve' => $summary['achieve'],
             'totalNonAchieve' => $summary['nonAchieve'],
             'totalNoData' => $summary['noData'],
-        ])->setPaper('a4', 'portrait');
+        ])->setPaper('a4', 'landscape');
 
         $filename = 'progress-achievement-' . str_replace(' ', '-', $judulPeriode) . '.pdf';
 

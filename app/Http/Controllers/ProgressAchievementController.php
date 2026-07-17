@@ -53,6 +53,12 @@ class ProgressAchievementController extends Controller
                     ->first()
                 : null;
 
+            $targetSebelumnya = $periodeSebelumnya
+                ? Target::where('metric_id', $metric->id)
+                    ->where('periode_mulai', $periodeSebelumnya)
+                    ->first()
+                : null;
+
             // Belum ada Target dan/atau Actual yang diinput untuk periode ini
             // (di Excel: sel kosong) -> tampilkan sebagai "No Data", bukan di-skip
             if (!$target || !$actual) {
@@ -76,23 +82,7 @@ class ProgressAchievementController extends Controller
             $nilaiTarget = (float) $target->nilai_target;
             $nilaiActual = (float) $actual->nilai_actual;
 
-            // Hitung persen achievement — handle semua edge case tanpa skip
-            if ($nilaiTarget == 0 && $nilaiActual == 0) {
-                // Zero-tolerance metric (mis. 0 kecelakaan) dan tercapai
-                $persenAchievement = 100.0;
-            } elseif ($nilaiTarget == 0) {
-                // Target 0 tapi actual ada → untuk 'turun' berarti gagal, untuk 'naik' juga aneh
-                $persenAchievement = $metric->arah_target === 'naik' ? 0.0 : 0.0;
-            } elseif ($metric->arah_target !== 'naik' && $nilaiActual == 0) {
-                // Arah turun, actual 0 → target/0 = infinity, treat as 0%
-                $persenAchievement = 0.0;
-            } elseif ($metric->arah_target === 'naik') {
-                $persenAchievement = ($nilaiActual / $nilaiTarget) * 100;
-            } else {
-                $persenAchievement = ($nilaiTarget / $nilaiActual) * 100;
-            }
-
-            $persenAchievement = round($persenAchievement, 1);
+            $persenAchievement = $this->hitungPersenAchievement($metric->arah_target, $nilaiTarget, $nilaiActual);
 
             if ($persenAchievement > 100) {
                 $kategori = 'melampaui';
@@ -104,21 +94,20 @@ class ProgressAchievementController extends Controller
 
             $isAchieve = $persenAchievement >= 100;
 
-            // Trend: naik/turun nilai actual dibanding bulan sebelumnya (bukan dibanding target)
+            // Trend: naik/turun/tetap PERSEN ACHIEVEMENT dibanding bulan sebelumnya
+            // (bukan nilai actual mentah) — supaya kalau target & actual sama-sama
+            // naik proporsional, achievement-nya tetap dianggap "tetap", bukan "naik".
             $trendPct = null;
             $trendNaik = null;
-            if ($actualSebelumnya) {
-                $nilaiSebelumnya = (float) $actualSebelumnya->nilai_actual;
-                if ($nilaiSebelumnya != 0) {
-                    $trendPct = round((($nilaiActual - $nilaiSebelumnya) / abs($nilaiSebelumnya)) * 100, 1);
-                    $trendNaik = $nilaiActual >= $nilaiSebelumnya;
-                } elseif ($nilaiActual == 0) {
-                    // Sama-sama 0, ga ada perubahan
-                    $trendPct = 0.0;
-                    $trendNaik = true;
-                }
-                // Kalau bulan lalu 0 dan sekarang > 0, persen kenaikannya ga terhingga,
-                // jadi $trendPct dibiarkan null (ga bisa ditampilkan sebagai %)
+            if ($actualSebelumnya && $targetSebelumnya) {
+                $persenSebelumnya = $this->hitungPersenAchievement(
+                    $metric->arah_target,
+                    (float) $targetSebelumnya->nilai_target,
+                    (float) $actualSebelumnya->nilai_actual
+                );
+
+                $trendPct = round($persenAchievement - $persenSebelumnya, 1);
+                $trendNaik = $trendPct >= 0;
             }
 
             $items[] = [
@@ -192,5 +181,31 @@ class ProgressAchievementController extends Controller
             'arah_target' => $metric->arah_target,
             'history' => $history,
         ]);
+    }
+
+    /**
+     * Hitung persen achievement (actual vs target), handle semua edge case.
+     * Dipakai buat periode sekarang MAUPUN periode sebelumnya, biar rumusnya
+     * konsisten dan trend naik/turun beneran ngebandingin achievement,
+     * bukan cuma nilai actual mentah.
+     */
+    protected function hitungPersenAchievement(string $arahTarget, float $nilaiTarget, float $nilaiActual): float
+    {
+        if ($nilaiTarget == 0 && $nilaiActual == 0) {
+            // Zero-tolerance metric (mis. 0 kecelakaan) dan tercapai
+            $persen = 100.0;
+        } elseif ($nilaiTarget == 0) {
+            // Target 0 tapi actual ada
+            $persen = 0.0;
+        } elseif ($arahTarget !== 'naik' && $nilaiActual == 0) {
+            // Arah turun, actual 0 → target/0 = infinity, treat as 0%
+            $persen = 0.0;
+        } elseif ($arahTarget === 'naik') {
+            $persen = ($nilaiActual / $nilaiTarget) * 100;
+        } else {
+            $persen = ($nilaiTarget / $nilaiActual) * 100;
+        }
+
+        return round($persen, 1);
     }
 }

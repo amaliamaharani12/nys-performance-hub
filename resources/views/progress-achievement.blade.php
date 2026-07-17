@@ -83,9 +83,20 @@
             font-weight: 800;
             letter-spacing: 0.3px;
             background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             white-space: nowrap;
+        }
+
+        /* html2canvas sering gagal render background-clip:text (muncul kotak
+           solid di belakang teks). Pas lagi capture, paksa jadi warna solid biasa. */
+        body.capturing .navbar-center h1 {
+            background: none;
+            -webkit-background-clip: initial;
+            background-clip: initial;
+            -webkit-text-fill-color: initial;
+            color: #1d4ed8;
         }
 
         .navbar-center .title-underline {
@@ -703,41 +714,59 @@
 
         @media (max-width: 1024px) {
             .top-section {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+
+            /* "Buka" left-panel supaya form dan summary-bar jadi anak langsung
+               dari top-section — cuma di breakpoint ini, desktop ga kepengaruh. */
+            .left-panel {
+                display: contents;
+            }
+
+            .filter-bar {
+                order: 1;
+                flex: 1 1 100%;
+            }
+
+            .summary-bar {
+                order: 2;
+                flex: 0 0 170px;
+                display: flex;
                 flex-direction: column;
-                align-items: stretch;
+                gap: 10px;
+            }
+
+            .summary-card {
+                min-width: 0;
             }
 
             .right-panel {
-                flex: none;
-                width: 100%;
-                max-width: 380px;
-                height: 240px;
-                margin: 0 auto;
+                order: 3;
+                flex: 1 1 300px;
+                min-width: 0;
+                min-height: 240px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .summary-bar {
+                flex: 1 1 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
 
-            .chart-container {
-                position: absolute;
-                top: 8px;
-                bottom: 8px;
-                left: 12px;
-                right: 12px;
+            .right-panel {
+                flex: 1 1 100%;
+                min-height: 260px;
             }
         }
 
         @media (max-width: 768px) {
             .filter-bar {
                 gap: 12px;
-            }
-
-            .summary-bar {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .summary-card {
-                min-width: 130px;
-                padding: 10px 12px;
             }
 
             .grid {
@@ -1004,11 +1033,12 @@
             </div>
 
             <div class="right-panel">
-                <div class="chart-container">
+                                    <div class="chart-container">
                     <canvas id="summaryPieChart"></canvas>
                 </div>
+            
             </div>
-        </div>
+                </div>
 
         @if (count($items) === 0)
             <div class="empty-state">No data available for the selected filters.</div>
@@ -1097,21 +1127,24 @@
                                 @elseif (!$hasTrend)
                                     <span style="font-size: 12px; color: #9ca3af;">vs last month: -</span>
                                 @else
-                                    <div class="trend-arrow {{ $trendClass }}">
-                                        @if ($trendNaik)
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                                                <polyline points="17 6 23 6 23 12"></polyline>
-                                            </svg>
-                                        @else
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                                <polyline points="17 18 23 18 23 12"></polyline>
-                                            </svg>
-                                        @endif
-                                        <span>{{ $trendNaik ? '+' : '-' }}{{ abs($trendPct) }}%</span>
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                        <span style="font-size: 12px; color: #9ca3af; line-height: 1;">vs last month</span>
+                                        <div class="trend-arrow {{ $trendClass }}">
+                                            @if ($trendNaik)
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                    stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                                    <polyline points="17 6 23 6 23 12"></polyline>
+                                                </svg>
+                                            @else
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                    stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                                                    <polyline points="17 18 23 18 23 12"></polyline>
+                                                </svg>
+                                            @endif
+                                            <span>{{ $trendNaik ? '+' : '-' }}{{ abs($trendPct) }}%</span>
+                                        </div>
                                     </div>
                                 @endif
                             </div>
@@ -1279,12 +1312,19 @@
         }
 
         function captureFullAsCanvas(callback) {
+            document.body.classList.add('capturing');
             html2canvas(document.body, {
                 backgroundColor: '#f4f6f9',
                 scale: 2,
                 useCORS: true,
                 ignoreElements: (el) => el.classList && el.classList.contains('export-hide')
-            }).then(callback);
+            }).then(function (canvas) {
+                document.body.classList.remove('capturing');
+                callback(canvas);
+            }).catch(function (err) {
+                document.body.classList.remove('capturing');
+                throw err;
+            });
         }
 
         function downloadImage() {
@@ -1292,6 +1332,15 @@
                 const link = document.createElement('a');
                 link.download = 'progress-achievement-{{ $periode }}.png';
                 link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function downloadImageJpg() {
+            captureFullAsCanvas(function (canvas) {
+                const link = document.createElement('a');
+                link.download = 'progress-achievement-{{ $periode }}.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
                 link.click();
             });
         }
