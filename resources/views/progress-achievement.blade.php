@@ -345,6 +345,42 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
+            position: relative;
+        }
+
+        .capture-arrow {
+            display: none;
+            position: absolute;
+            top: 50%;
+            right: 11.5px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5.5px solid #4b5563;
+            transform: translateY(-2px);
+            pointer-events: none;
+        }
+
+        /* html2canvas ga bisa render posisi pseudo-element ::after dengan benar
+           (biasanya ke-render di posisi salah), jadi pas lagi capture: paksa
+           sembunyiin SEMUA pseudo-element panah Choices.js (termasuk yang di
+           .choices::after pada v11+), munculin panah pengganti (elemen HTML
+           asli .capture-arrow) di posisi kanan. */
+        body.capturing .choices[data-type*="select-one"]::after,
+        body.capturing .choices__inner::after,
+        body.capturing .choices__item--selectable::after {
+            display: none !important;
+        }
+
+        body.capturing .capture-arrow {
+            display: block;
+        }
+
+        /* Sembunyikan panah kiri (::after pada item terpilih) di tampilan normal */
+        .choices[data-type*="select-one"] .choices__item--selectable::after,
+        .choices[data-type*="select-one"] .choices__inner::after {
+            display: none !important;
         }
 
         .is-focused .choices__inner,
@@ -1202,11 +1238,21 @@
         document.addEventListener("DOMContentLoaded", function () {
             const selects = document.querySelectorAll('.filter-group select');
             selects.forEach(select => {
-                new Choices(select, {
+                const instance = new Choices(select, {
                     searchEnabled: false,
                     itemSelectText: '',
                     shouldSort: false,
                 });
+
+                // html2canvas ga bisa render panah dropdown Choices.js (dibuat pakai
+                // pseudo-element ::after), jadi disipin panah beneran (elemen HTML asli)
+                // yang cuma dimunculin pas lagi capture PNG (lihat CSS body.capturing).
+                const inner = select.closest('.choices')?.querySelector('.choices__inner');
+                if (inner) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'capture-arrow';
+                    inner.appendChild(arrow);
+                }
             });
 
             const achieveCount = {{ $totalAchieve }};
@@ -1355,12 +1401,21 @@
             return params.toString();
         }
 
+        function triggerDownload(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => document.body.removeChild(a), 1000);
+        }
+
         function downloadExcel() {
-            window.location.href = '{{ route('progress-achievement.export.excel') }}?' + exportQueryString();
+            triggerDownload('{{ route('progress-achievement.export.excel') }}?' + exportQueryString());
         }
 
         function downloadPdf() {
-            window.location.href = '{{ route('progress-achievement.export.pdf') }}?' + exportQueryString();
+            triggerDownload('{{ route('progress-achievement.export.pdf') }}?' + exportQueryString());
         }
 
         function captureFullAsCanvas(callback) {
@@ -1398,20 +1453,48 @@
         }
 
         function printPdf() {
-            // The PDF opens in a new tab — use the print button in the PDF viewer
-            window.open('{{ route('progress-achievement.export.pdf') }}?' + exportQueryString(), '_blank');
+            const url = '{{ route('progress-achievement.export.pdf') }}?' + exportQueryString();
+            // Buat iframe tersembunyi, load PDF, lalu trigger print — tanpa buka tab baru
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            iframe.onload = function () {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    // Fallback: browser blokir print iframe (misal PDF reader bawaan)
+                    // Download saja sebagai gantinya
+                    triggerDownload(url);
+                }
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                }, 60000);
+            };
         }
 
         function printImage() {
             captureFullAsCanvas(function (canvas) {
                 const dataUrl = canvas.toDataURL('image/png');
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(
-                    '<html><head><title>Print Progress Achievement</title></head>' +
-                    '<body style="margin:0"><img src="' + dataUrl +
-                    '" style="width:100%" onload="window.print()"></body></html>'
+                // Buat iframe tersembunyi dengan gambar, trigger print — tanpa buka tab baru
+                const iframe = document.createElement('iframe');
+                iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+                document.body.appendChild(iframe);
+                iframe.contentDocument.open();
+                iframe.contentDocument.write(
+                    '<!DOCTYPE html><html><head><title>Print Progress Achievement</title>' +
+                    '<style>*{margin:0;padding:0;}img{width:100%;display:block;}</style></head>' +
+                    '<body><img src="' + dataUrl + '"></body></html>'
                 );
-                printWindow.document.close();
+                iframe.contentDocument.close();
+                iframe.onload = function () {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                    setTimeout(() => {
+                        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                    }, 60000);
+                };
             });
         }
 
