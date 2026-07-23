@@ -604,7 +604,7 @@
             color: #9ca3af;
         }
 
-        /* Modal */
+        /* Modal — full screen, not a floating popup */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -612,51 +612,71 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.45);
-            align-items: center;
-            justify-content: center;
+            background: #ffffff;
             z-index: 50;
+            overflow-y: auto;
         }
 
         .modal-overlay.active {
-            display: flex;
+            display: block;
         }
 
         .modal-box {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 24px;
-            width: 90%;
-            max-width: 640px;
-            max-height: 85vh;
-            overflow-y: auto;
+            width: 100%;
+            min-height: 100%;
+            padding: 24px 40px 60px;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            max-width: 960px;
+            margin: 0 auto 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .modal-header h2 {
-            font-size: 18px;
+            font-size: 22px;
+            font-weight: 700;
             margin: 0;
+            color: #1f2937;
         }
 
         .modal-close {
-            background: none;
+            background: #f3f4f6;
             border: none;
-            font-size: 22px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 20px;
             cursor: pointer;
-            color: #6b7280;
+            color: #4b5563;
             line-height: 1;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .modal-chart-wrap {
+            max-width: 960px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            padding: 20px 24px;
         }
 
         table.detail-table {
             width: 100%;
+            max-width: 960px;
+            margin: 20px auto 0;
             border-collapse: collapse;
-            margin-top: 16px;
             font-size: 13px;
         }
 
@@ -1033,12 +1053,12 @@
             </div>
 
             <div class="right-panel">
-                                    <div class="chart-container">
+                <div class="chart-container">
                     <canvas id="summaryPieChart"></canvas>
                 </div>
-            
+
             </div>
-                </div>
+        </div>
 
         @if (count($items) === 0)
             <div class="empty-state">No data available for the selected filters.</div>
@@ -1162,7 +1182,9 @@
                 <h2 id="modalTitle">Item Details</h2>
                 <button class="modal-close" onclick="closeDetail()">&times;</button>
             </div>
-            <canvas id="detailChart" height="140"></canvas>
+            <div class="modal-chart-wrap">
+                <canvas id="detailChart" height="90"></canvas>
+            </div>
             <table class="detail-table" id="detailTable">
                 <thead>
                     <tr>
@@ -1253,15 +1275,45 @@
                     }
 
                     detailChartInstance = new Chart(document.getElementById('detailChart'), {
-                        type: 'bar',
+                        type: 'line',
                         data: {
                             labels: labels,
                             datasets: [
-                                { label: 'Target', data: targets, backgroundColor: '#93c5fd' },
-                                { label: 'Actual', data: actuals, backgroundColor: '#3b82f6' }
+                                {
+                                    label: 'Target',
+                                    data: targets,
+                                    borderColor: '#16a34a',
+                                    backgroundColor: '#16a34a',
+                                    pointBackgroundColor: '#16a34a',
+                                    pointRadius: 4,
+                                    borderWidth: 2.5,
+                                    tension: 0.3,
+                                    fill: false
+                                },
+                                {
+                                    label: 'Actual',
+                                    data: actuals,
+                                    borderColor: '#dc2626',
+                                    backgroundColor: '#dc2626',
+                                    pointBackgroundColor: '#dc2626',
+                                    pointRadius: 4,
+                                    borderWidth: 2.5,
+                                    tension: 0.3,
+                                    fill: false
+                                }
                             ]
                         },
-                        options: { responsive: true, scales: { y: { beginAtZero: false } } }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: { y: { beginAtZero: false } },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: { usePointStyle: true, boxWidth: 8 }
+                                }
+                            }
+                        }
                     });
 
                     const tbody = document.getElementById('detailTableBody');

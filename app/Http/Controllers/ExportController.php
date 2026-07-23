@@ -259,7 +259,7 @@ class ExportController extends Controller
             'totalAchieve' => $summary['achieve'],
             'totalNonAchieve' => $summary['nonAchieve'],
             'totalNoData' => $summary['noData'],
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('a4', 'portrait');
 
         $filename = 'progress-achievement-' . str_replace(' ', '-', $judulPeriode) . '.pdf';
 
